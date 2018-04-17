@@ -45,18 +45,18 @@ public class Library {
             if (inputString == "invalid") {
                 System.out.print("请按正确的格式输入" + STUDENT_INFO_FORMAT + "：\n");
             } else {
-                String[] arr = inputString.split(", ");
+                String[] arr = inputString.split(",");
                 for (int i = 0; i < arr.length; i++) {
                     if (i > 1) {
-                        map.put(arr[i].split(": ")[0], Integer.valueOf(arr[i].split(": ")[1]));
+                        map.put(arr[i].split(":")[0].trim(), Integer.valueOf(arr[i].split(":")[1].trim()));
                     }
                 }
-                student.add(arr[0], Integer.parseInt(arr[1]), map);
+                student.add(arr[0].trim(), Integer.parseInt(arr[1].trim()), map);
                 //若添加相同学号学生，视为同一人，更新覆盖其信息
                 if (students.stream().anyMatch(item -> item.getId() == student.getId())) {
                     students.stream().forEach(item -> {
                         if (item.getId() == student.getId()) {
-                            item.add(arr[0], Integer.parseInt(arr[1]), map);
+                            item.add(arr[0].trim(), Integer.parseInt(arr[1].trim()), map);
                         }
                     });
                 } else {
@@ -77,11 +77,11 @@ public class Library {
             if (inputString == "invalid") {
                 System.out.print("请按正确的格式" + INPUT_ID_FORMAT + "：\n");
             }else{
-                String[] arr = inputString.split(", ");
+                String[] arr = inputString.split(",");
                 List<Integer> summarys = new ArrayList<>();
                 System.out.print("成绩单\n姓名|数学|语文|英语|编程|平均分|总分\n" + DIVIDER);
                 Arrays.asList(arr).stream().forEach(item -> {
-                    students.stream().filter(p -> p.getId() == Integer.parseInt(item)).forEach(p -> {
+                    students.stream().filter(p -> p.getId() == Integer.parseInt(item.trim())).forEach(p -> {
                         summarys.add(Integer.valueOf(p.getSummary()));
                         System.out.print(p.printStudentInfo() + "\n");
                     });
@@ -95,8 +95,8 @@ public class Library {
     }
 
     //全班总分平均数
-    public double getTotalAverage(List<Integer> summarys) {
-        return summarys.stream().mapToInt(item -> item).sum() / (double)summarys.size();
+    public String getTotalAverage(List<Integer> summarys) {
+        return removeZeroAfterDot(summarys.stream().mapToInt(item -> item).sum() / (double)summarys.size());
     }
 
     //全班总分中位数
@@ -104,6 +104,12 @@ public class Library {
     public String getTotalMidden(List<Integer> summarys) {
         int index = summarys.size() % 2 == 0 ? summarys.size() / 2 - 1 : (summarys.size() - 1) / 2;
         return summarys.stream().sorted().toArray()[index].toString();
+    }
+
+    //去掉小数点后多余的0
+    public String removeZeroAfterDot(double num){
+        String arr = String.valueOf(num);
+        return arr.replaceAll("0+$", "").replaceAll("[.]$", "");
     }
 
     public void initLibrary() throws Exception {

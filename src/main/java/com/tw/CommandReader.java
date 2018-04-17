@@ -1,8 +1,11 @@
 package com.tw;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CommandReader {
     private Scanner scanner = new Scanner(System.in);
@@ -15,25 +18,26 @@ public class CommandReader {
 
     public boolean validate(String inputString, int flag) {
         //格式：姓名, 学号, 学科: 成绩, 学科: 成绩, 学科: 成绩, 学科: 成绩（至少有一门成绩）
-        String[] arr = inputString.split(", ");
+        String[] arr = inputString.split(",");
+        List<String> list = Stream.of(arr).map(item -> item.trim()).collect(Collectors.toList());
         Pattern pattern = Pattern.compile("-?[0-9]*");
         //validate the input studentInfo
         if (flag == 0) {
             //id is not digit
-            if (!pattern.matcher(arr[1]).matches() || arr.length < 3) {
+            if (!pattern.matcher(list.get(1)).matches() || arr.length < 3) {
                 return false;
             }
-            for (int i = 0; i < arr.length; i++) {
+            for (int i = 0; i < list.size(); i++) {
                 if (i > 1) {
                     //judge whether it contains ": " and the score is digit
-                    if (!arr[i].contains(": ") || !pattern.matcher(arr[i].split(": ")[1]).matches()) {
+                    if (!list.get(i).contains(":") || !pattern.matcher(list.get(i).split(":")[1].trim()).matches()) {
                         return false;
                     }
                 }
             }
         } else if (flag == 1) {
             //validate the student id list
-            return Arrays.asList(arr).stream().allMatch(item -> pattern.matcher(item).matches());
+            return list.stream().allMatch(item -> pattern.matcher(item).matches());
         } else {
             return pattern.matcher(inputString).matches();
         }
