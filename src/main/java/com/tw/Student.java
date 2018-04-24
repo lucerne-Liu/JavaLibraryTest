@@ -1,8 +1,9 @@
 package com.tw;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class Student {
+public class Student implements Serializable{
     public static final String SEPARATOR = "|";
     private String name;
     private int id;

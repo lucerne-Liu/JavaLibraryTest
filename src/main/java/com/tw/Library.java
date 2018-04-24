@@ -1,5 +1,7 @@
 package com.tw;
 
+import java.io.*;
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class Library {
@@ -12,9 +14,19 @@ public class Library {
     public Library() {
     }
 
-    public Library(CommandReader reader, List<Student> students) {
+    public Library(CommandReader reader, List<Student> students) throws IOException, ClassNotFoundException {
         this.reader = reader;
         this.students = new ArrayList<>(students);
+        getSerializedStudents();
+    }
+
+    //读取序列化student历史
+    public void getSerializedStudents() throws IOException, ClassNotFoundException {
+        File file = new File("studentsHistory.ser");
+        if (file.exists()){
+            ObjectInputStream os = new ObjectInputStream(new FileInputStream(file));
+            students = (List<Student>) os.readObject();
+        }
     }
 
     public boolean printMainMenu() throws Exception {
@@ -28,8 +40,10 @@ public class Library {
                 printReport();
                 return true;
             case 3:
+                saveStudentList();
                 return false;
             default:
+                saveStudentList();
                 return false;
         }
     }
@@ -38,7 +52,7 @@ public class Library {
     public void addStudent() throws Exception {
         String inputString;
         Student student = new Student();
-        Map<String,Integer> map = new HashMap<>();
+        Map<String, Integer> map = new HashMap<>();
         System.out.print("请输入学生信息" + STUDENT_INFO_FORMAT + "，按回车提交：\n");
         while (true) {
             inputString = reader.read(0);
@@ -68,6 +82,13 @@ public class Library {
         }
     }
 
+    //退出时序列化保存StudentList
+    public void saveStudentList() throws IOException {
+        ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream("studentsHistory.ser"));
+        os.writeObject(students);
+        os.close();
+    }
+
     //打印成绩单
     public void printReport() throws Exception {
         String inputString;
@@ -76,7 +97,7 @@ public class Library {
             inputString = reader.read(1);
             if (inputString == "invalid") {
                 System.out.print("请按正确的格式" + INPUT_ID_FORMAT + "：\n");
-            }else{
+            } else {
                 String[] arr = inputString.split(",");
                 List<Integer> summarys = new ArrayList<>();
                 System.out.print("成绩单\n姓名|数学|语文|英语|编程|平均分|总分\n" + DIVIDER);
@@ -88,7 +109,7 @@ public class Library {
                 });
                 System.out.print(DIVIDER);
                 System.out.print("全班总分平均数：" + (summarys.isEmpty() ? 0 : getTotalAverage(summarys)) + "\n");
-                System.out.print("全班总分中位数：" + (summarys.isEmpty() ? 0 : getTotalMidden(summarys)) + "\n") ;
+                System.out.print("全班总分中位数：" + (summarys.isEmpty() ? 0 : getTotalMidden(summarys)) + "\n");
                 break;
             }
         }
@@ -96,7 +117,7 @@ public class Library {
 
     //全班总分平均数
     public String getTotalAverage(List<Integer> summarys) {
-        return removeZeroAfterDot(summarys.stream().mapToInt(item -> item).sum() / (double)summarys.size());
+        return removeZeroAfterDot(summarys.stream().mapToInt(item -> item).sum() / (double) summarys.size());
     }
 
     //全班总分中位数
@@ -107,12 +128,13 @@ public class Library {
     }
 
     //去掉小数点后多余的0
-    public String removeZeroAfterDot(double num){
+    public String removeZeroAfterDot(double num) {
         String arr = String.valueOf(num);
         return arr.replaceAll("0+$", "").replaceAll("[.]$", "");
     }
 
     public void initLibrary() throws Exception {
-        while (printMainMenu()) {}
+        while (printMainMenu()) {
+        }
     }
 }
